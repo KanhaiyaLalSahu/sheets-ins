@@ -1,11 +1,14 @@
+import Header from "./components/Header"
+import { Spreadsheet } from "./components/SpreadSheet"
 
 
 function App() {
 
   return (
-    <>
-      <p>Building the production ready app</p>
-    </>
+      <div className="flex flex-col h-screen bg-gray-100">
+      <Header />
+      <Spreadsheet/>  
+    </div>
   )
 }
 
