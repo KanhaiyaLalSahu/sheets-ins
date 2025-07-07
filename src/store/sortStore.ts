@@ -1,20 +1,13 @@
 import { create } from "zustand";
 
-interface SortState {
+interface SortStore {
+  column: string | null;
   ascending: boolean;
-  // Allow explicitly setting the direction
-  setSort: (direction: "asc" | "desc") => void;
-  toggleSort: () => void;
+  setSort: (column: string, ascending: boolean) => void;
 }
 
-export const useSortStore = create<SortState>((set) => ({
+export const useSortStore = create<SortStore>((set) => ({
+  column: null,
   ascending: true,
-  setSort: (direction) =>
-    set(() => ({
-      ascending: direction === "asc",
-    })),
-  toggleSort: () =>
-    set((state) => ({
-      ascending: !state.ascending,
-    })),
+  setSort: (column, ascending) => set({ column, ascending }),
 }));
