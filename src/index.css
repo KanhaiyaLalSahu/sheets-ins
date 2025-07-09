@@ -9,3 +9,18 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Mild horizontal scrollbar */
+.my-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+.my-scrollbar::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+.my-scrollbar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+.my-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: #ccc;
+}
