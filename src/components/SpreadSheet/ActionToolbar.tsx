@@ -1,87 +1,116 @@
-import React, { useRef } from "react";
-import Papa from "papaparse";
+import React, { useRef, useState } from "react";
 import Import from "../../assets/Arrow.svg";
 import Export from "../../assets/Arrow Upload.svg";
 import Split from "../../assets/Arrow Split.svg";
 import Share from "../../assets/Share.svg";
+import Papa from "papaparse";
 import { useSpreadsheetDataStore } from "../../store/useSpreadsheetDataStore";
 import { useColumnVisibilityStore } from "../../store/columnVisibilityStore";
+import { useIngestCsv } from "../../hooks/uploadCSV";
 
 export function ActionToolbar() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const { data, setData } = useSpreadsheetDataStore();
+  const { data } = useSpreadsheetDataStore();
+  const uploadCsvMutation = useIngestCsv();
+  const { hiddenColumns } = useColumnVisibilityStore();
+
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (!file.name.endsWith(".csv")) {
-      alert("Please select a CSV file.");
+      console.warn("Please select a CSV file.");
+      // Show toast here instead of alert
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result;
-      if (typeof text === "string") {
-        const parsed = Papa.parse(text, {
-          header: true,
-          skipEmptyLines: true,
-        });
-        if (parsed.errors.length) {
-          console.error("CSV Parse Errors:", parsed.errors);
-          alert("Failed to parse CSV.");
-          return;
-        }
+    setUploading(true);
+    uploadCsvMutation.mutate(file, {
+      onSuccess: () => {
+        console.log("CSV uploaded successfully!");
+        // Show success toast here
+      },
+      onError: (err) => {
+        console.error("Upload error:", err);
+        // Show error toast here
+      },
+      onSettled: () => {
+        setUploading(false);
+      },
+    });
 
-        const newData = parsed.data as Record<string, string>[];
-        setData(newData); // Update Zustand store with imported data
-      }
-    };
-    reader.readAsText(file);
     event.target.value = "";
   };
 
-const handleExport = () => {
-  const { hiddenColumns } = useColumnVisibilityStore.getState();
+  const handleExport = () => {
+    console.log("Exporting data...");
+    if (data.length === 0) {
+      console.warn("No data to export.");
+      // Show toast here
+      return;
+    }
 
-  if (data.length === 0) {
-    alert("No data to export.");
-    return;
-  }
-
-  // Filter out hidden fields and convert all values to strings
-  const visibleData = data.map((row) => {
-    const filteredRow: Record<string, string> = {};
-    Object.entries(row).forEach(([key, value]) => {
-      if (!hiddenColumns.includes(key)) {
-        // Convert value to string safely
-        filteredRow[key] = value !== null && value !== undefined ? String(value) : "";
-      }
+    const visibleData = data.map((row) => {
+      const filteredRow: Record<string, string> = {};
+      Object.entries(row).forEach(([key, value]) => {
+        if (!hiddenColumns.includes(key)) {
+          filteredRow[key] =
+            value !== null && value !== undefined ? String(value) : "";
+        }
+      });
+      return filteredRow;
     });
-    return filteredRow;
-  });
 
-  const csv = Papa.unparse(visibleData);
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.setAttribute("download", "spreadsheet_export.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+    const csv = Papa.unparse(visibleData);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "spreadsheet_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    console.log("Export completed.");
+    // Show success toast here
+  };
 
   return (
     <div className="flex items-center space-x-2">
       {/* Import */}
-      <div>
+      <div className="relative">
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center space-x-1 px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-100"
+          disabled={uploading}
+          className={`flex items-center space-x-1 px-3 py-1.5 text-sm border border-gray-300 rounded ${
+            uploading ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"
+          }`}
         >
           <img src={Import} alt="" />
-          <span>Import</span>
+          <span>{uploading ? "Uploading..." : "Import"}</span>
+          {uploading && (
+            <svg
+              className="ml-2 animate-spin h-4 w-4 text-gray-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+          )}
         </button>
         <input
           ref={fileInputRef}
@@ -112,6 +141,9 @@ const handleExport = () => {
         <img src={Split} alt="" />
         <span>New Action</span>
       </button>
+
+      {/* Display ingestion info */}
+      
     </div>
   );
 }

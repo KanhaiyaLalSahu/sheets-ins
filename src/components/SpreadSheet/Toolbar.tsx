@@ -1,24 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { EyeOff, ArrowUpDown, X } from "lucide-react";
 import { useSortStore } from "../../store/sortStore";
-import { useSpreadsheetDataStore } from "../../store/useSpreadsheetDataStore";
 import { useColumnVisibilityStore } from "../../store/columnVisibilityStore";
+import { useSelectedSheetStore } from "../../store/useSelectedSheetStore";
+import { useIngestionStore } from "../../store/new/useIngestionStore";
+import { useFetchSheetData } from "../../hooks/useFetchSheetData";
 import ActionToolbar from "./ActionToolbar";
 
 export const Toolbar: React.FC = () => {
-  const { data } = useSpreadsheetDataStore();
+  const ingestionId = useIngestionStore((s) => s.ingestionId);
+  const { selectedSheet } = useSelectedSheetStore();
+  const { data } = useFetchSheetData(ingestionId, selectedSheet);
+
   const { hiddenColumns, toggleColumn } = useColumnVisibilityStore();
-  const { column: sortColumn, ascending, setSort } = useSortStore();
+  const { setSort } = useSortStore();
 
   const [search, setSearch] = useState("");
   const [showColumnMenu, setShowColumnMenu] = useState(false);
   const [showSortMenu, setShowSortMenu] = useState(false);
 
-  const allColumns = React.useMemo(() => {
-    if (data.length === 0) return [];
-    const keys = new Set<string>();
-    data.forEach((row) => Object.keys(row).forEach((k) => keys.add(k)));
-    return Array.from(keys);
+  const allColumns = useMemo(() => {
+    return data?.headers ?? [];
   }, [data]);
 
   return (
@@ -28,9 +30,9 @@ export const Toolbar: React.FC = () => {
         <div className="relative">
           <button
             onClick={() => setShowColumnMenu(!showColumnMenu)}
-            className="flex items-center px-3 py-1.5 text-sm border-gray-300 rounded hover:bg-gray-100"
+            className="flex items-center px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-100"
           >
-            <EyeOff className="w-4 h-4" />
+            <EyeOff className="w-4 h-4 mr-1" />
             <span>Hide fields</span>
           </button>
           {showColumnMenu && (
@@ -58,7 +60,7 @@ export const Toolbar: React.FC = () => {
                   .map((k) => (
                     <div
                       key={k}
-                      className="flex justify-between text-sm py-1"
+                      className="flex justify-between items-center text-sm py-1"
                     >
                       <span>{k}</span>
                       <label className="inline-flex items-center cursor-pointer">
@@ -83,9 +85,9 @@ export const Toolbar: React.FC = () => {
         <div className="relative">
           <button
             onClick={() => setShowSortMenu(!showSortMenu)}
-            className="flex items-center px-3 py-1.5 text-sm border-gray-300 rounded hover:bg-gray-100"
+            className="flex items-center px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-100"
           >
-            <ArrowUpDown className="w-4 h-4" />
+            <ArrowUpDown className="w-4 h-4 mr-1" />
             <span>Sort</span>
           </button>
           {showSortMenu && (

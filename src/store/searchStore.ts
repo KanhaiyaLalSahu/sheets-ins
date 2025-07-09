@@ -9,3 +9,5 @@ export const useSearchStore = create<SearchState>((set) => ({
   query: "",
   setQuery: (q) => set({ query: q }),
 }));
+
+//ok
