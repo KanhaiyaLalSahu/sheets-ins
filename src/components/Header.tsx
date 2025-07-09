@@ -1,23 +1,36 @@
 import React from "react";
-import { Search, Bell } from "lucide-react";
-import Panel from "../assets/Panel.svg";
+import { Search, Bell, Menu, X } from "lucide-react";
 import { useSearchStore } from "../store/searchStore";
+import closedPanel from "../assets/sidebar/closedPanel.svg"; 
+import OpenPanel from "../assets/sidebar/openPanel.svg"; 
+interface HeaderProps {
+  onToggleSidebar: () => void;
+  isSidebarOpen: boolean;
+}
 
-const Header: React.FC = () => {
+const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
   const { query, setQuery } = useSearchStore();
 
   return (
     <div className="flex items-center justify-between p-3 bg-white border-b border-gray-200">
       <div className="flex items-center space-x-2">
-        <img src={Panel} alt="Panel" />
+        <button
+          onClick={onToggleSidebar}
+          className="p-1 hover:bg-gray-100 rounded transition-colors"
+        >
+          {isSidebarOpen ? (
+            <img src={OpenPanel} alt="X" />
+          ) : (
+            <img src={closedPanel} alt="=" />
+          )}
+        </button>
         <span className="text-sm text-gray-600">Workspace</span>
         <span className="text-gray-400">›</span>
         <span className="text-sm text-gray-600">Folder 2</span>
         <span className="text-gray-400">›</span>
-        <span className="text-sm font-medium">Spreadsheet 3 </span>
-        <span className="text-sm text-gray-600">... </span>
+        <span className="text-sm font-medium">Spreadsheet 3</span>
+        <span className="text-sm text-gray-600">...</span>
       </div>
-
       <div className="flex items-center space-x-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
