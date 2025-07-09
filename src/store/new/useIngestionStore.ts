@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface IngestionState {
   ingestionId: string | null;
@@ -7,11 +8,17 @@ interface IngestionState {
   resetIngestionInfo: () => void;
 }
 
-export const useIngestionStore = create<IngestionState>((set) => ({
-  ingestionId: null,
-  columns: [],
-  setIngestionInfo: (ingestionId, columns) =>
-    set({ ingestionId, columns }),
-  resetIngestionInfo: () =>
-    set({ ingestionId: null, columns: [] }),
-}));
+export const useIngestionStore = create<IngestionState>()(
+  persist(
+    (set) => ({
+      ingestionId: null,
+      columns: [],
+      setIngestionInfo: (ingestionId, columns) =>
+        set({ ingestionId, columns }),
+      resetIngestionInfo: () => set({ ingestionId: null, columns: [] }),
+    }),
+    {
+      name: "ingestion-storage", // key in localStorage
+    }
+  )
+);
