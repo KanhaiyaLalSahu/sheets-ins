@@ -35,6 +35,7 @@ export const useAddColumn = () => {
         `/api/ingest/addcolumn`,
         params
       );
+      console.log("Add column response:", res.data);
       return res.data;
     },
   });

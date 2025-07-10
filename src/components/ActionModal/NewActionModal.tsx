@@ -1,4 +1,3 @@
-import React from "react";
 import { useNewActionModal } from "../../store/useNewActionModal";
 import StepSelectAction from "./StepSelectAction";
 import StepGenerateContent from "./StepGenerateContent";

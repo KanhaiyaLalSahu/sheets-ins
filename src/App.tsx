@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Header from "./components/Header";
 import { Spreadsheet } from "./components/SpreadSheet";
 import Sidebar from "./components/SpreadSheet/Sidebar";

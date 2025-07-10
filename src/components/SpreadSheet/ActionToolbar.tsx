@@ -8,7 +8,7 @@ import { useSpreadsheetDataStore } from "../../store/useSpreadsheetDataStore";
 import { useColumnVisibilityStore } from "../../store/columnVisibilityStore";
 import { useIngestCsv } from "../../hooks/uploadCSV";
 import { useNewActionModal } from "../../store/useNewActionModal";
-import { NewActionModal } from "../ActionModal/NewActionModal"; 
+import { NewActionModal } from "../ActionModal/NewActionModal";
 // import { useNavigate } from "react-router-dom";
 
 export function ActionToolbar() {

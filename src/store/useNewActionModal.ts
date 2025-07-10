@@ -20,6 +20,7 @@ interface NewActionModalState {
   setSelectedOption: (option: string | null) => void;
   setContentFormat: (format: string) => void;
   toggleColumn: (column: string) => void;
+  setColumnsToMigrate: (cols: string[]) => void; // ✅ Add this line
   toggleMigrateColumn: (column: string) => void;
   setClassification: (result: NewActionModalState["classification"]) => void;
   setNewSheet: (val: boolean) => void;
@@ -84,6 +85,7 @@ export const useNewActionModal = create<NewActionModalState>((set) => ({
         : [...state.columnsToMigrate, column],
     })),
   setClassification: (classification) => set({ classification }),
+  setColumnsToMigrate: (cols) => set({ columnsToMigrate: cols }),
   setNewSheet: (val) => set({ newSheet: val }),
   setColumnName: (name) => set({ columnName: name }),
   setDescription: (desc) => set({ description: desc }),

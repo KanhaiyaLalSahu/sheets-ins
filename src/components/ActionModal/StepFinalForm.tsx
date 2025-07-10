@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { X, ArrowLeft } from "lucide-react";
 import { useNewActionModal } from "../../store/useNewActionModal";
 import { useSpreadsheetDataStore } from "../../store/useSpreadsheetDataStore";
@@ -9,6 +9,7 @@ import { useAddColumn } from "../../hooks/useAddColumn";
 import { useFetchSheets } from "../../hooks/useFetchSheets";
 import toast from "react-hot-toast";
 import type { AddColumnParams } from "../../hooks/useAddColumn";
+
 export function StepFinalForm() {
   const {
     close,
@@ -20,6 +21,7 @@ export function StepFinalForm() {
     toggleColumn,
     columnsToMigrate,
     toggleMigrateColumn,
+    setColumnsToMigrate, // make sure this is imported from the store
     newSheet,
     setNewSheet,
     columnName,
@@ -41,53 +43,51 @@ export function StepFinalForm() {
   const [showColumnPicker, setShowColumnPicker] = useState(false);
 
   const handleSubmit = () => {
-   if (!ingestionId) {
-    toast.error("Ingestion ID is missing");
-    return;
-  }
+    if (!ingestionId) {
+      toast.error("Ingestion ID is missing");
+      return;
+    }
 
-  if (!prompt || !columnName || !outputFormat) {
-    toast.error("Please fill all required fields.");
-    return;
-  }
+    if (!prompt || !columnName || !outputFormat) {
+      toast.error("Please fill all required fields.");
+      return;
+    }
 
-  const rowsAsArrays = data.map((row) =>
-    headers.map((header) => String(row[header] ?? ""))
-  );
+    const rowsAsArrays = data.map((row) =>
+      headers.map((header) => String(row[header] ?? ""))
+    );
 
-  const payload: AddColumnParams = {
-    ingestionId,
-    prompt,
-    selectedColumns,
-    tableData: {
-      headers,
-      rows: rowsAsArrays,
-    },
-    newSheet,
-    sourceSheetNumber,
-    columnName,
-    description,
-    outputFormat,
-    columnsToMigrate,
-    actionName,
-    actionId,
-  };
+    const payload: AddColumnParams = {
+      ingestionId,
+      prompt,
+      selectedColumns,
+      tableData: {
+        headers,
+        rows: rowsAsArrays,
+      },
+      newSheet,
+      sourceSheetNumber,
+      columnName,
+      description,
+      outputFormat,
+      columnsToMigrate,
+      actionName,
+      actionId,
+    };
 
-  console.log("Submitting:", payload);
+    console.log("Submitting:", payload);
 
-  addColumn(payload, {
-    onSuccess: (response) => {
-      toast.success(
-        `Column generation started in sheet #${response.targetSheet}`
-      );
-      refetchSheets();
-      close();
-      reset(); // Reset AFTER successful close
-    },
-    onError: (error) => {
-      toast.error(`Failed: ${error.message}`);
-    },
-  });
+    addColumn(payload, {
+      onSuccess: (response) => {
+        toast.success(`Column generation started in sheet #${response.targetSheet}`);
+        refetchSheets();
+        close();
+        reset(); // Reset AFTER successful close
+      },
+      onError: (error) => {
+        toast.error(`Failed: ${error.message}`);
+      },
+    });
   };
 
   return (
@@ -133,7 +133,10 @@ export function StepFinalForm() {
         <div className="border-2 border-dashed border-blue-200 rounded-lg p-3 space-y-3">
           <div className="flex gap-2 w-full justify-between">
             <button
-              onClick={() => setNewSheet(false)}
+              onClick={() => {
+                setNewSheet(false);
+                setColumnsToMigrate(headers); // Automatically import all columns
+              }}
               className={`px-3 py-1 rounded text-sm w-full border ${
                 !newSheet
                   ? "bg-green-100 text-green-700"
@@ -143,7 +146,10 @@ export function StepFinalForm() {
               Existing Sheet
             </button>
             <button
-              onClick={() => setNewSheet(true)}
+              onClick={() => {
+                setNewSheet(true);
+                setColumnsToMigrate([]); // Clear columns when switching back
+              }}
               className={`px-3 py-1 rounded text-sm w-full border ${
                 newSheet
                   ? "bg-green-100 text-green-700"
@@ -183,22 +189,30 @@ export function StepFinalForm() {
           />
         </div>
 
-        {/* Columns */}
-        <div className="border-2 border-dashed border-blue-200 rounded-lg p-3">
-          <h3 className="text-sm font-medium mb-2">Columns to Migrate</h3>
-          <div className="space-y-1">
-            {headers.map((col) => (
-              <label key={col} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={columnsToMigrate.includes(col)}
-                  onChange={() => toggleMigrateColumn(col)}
-                />
-                <span>{col}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+ {/* Columns - Always show but disable if Existing Sheet */}
+<div className="border-2 border-dashed border-blue-200 rounded-lg p-3 opacity-100">
+  <h3 className="text-sm font-medium mb-2">Columns to Migrate</h3>
+  <div className="space-y-1">
+    {headers.map((col) => (
+      <label
+        key={col}
+        className={`flex items-center gap-2 ${
+          !newSheet ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={columnsToMigrate.includes(col)}
+          disabled={!newSheet}
+          onChange={() => {
+            if (newSheet) toggleMigrateColumn(col);
+          }}
+        />
+        <span>{col}</span>
+      </label>
+    ))}
+  </div>
+</div>
 
         {/* Actions */}
         <div className="flex justify-between">
