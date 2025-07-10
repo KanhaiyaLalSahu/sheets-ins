@@ -6,18 +6,21 @@ export interface SpreadsheetRow {
 }
 
 interface SpreadsheetDataState {
+  headers: string[];
   data: SpreadsheetRow[];
-  setData: (rows: SpreadsheetRow[]) => void;
+  setData: (headers: string[], rows: SpreadsheetRow[]) => void;
   addRow: (row: SpreadsheetRow) => void;
   updateRow: (index: number, updatedRow: SpreadsheetRow) => void;
   deleteRow: (index: number) => void;
+  clearData: () => void;
 }
 
 export const useSpreadsheetDataStore = create<SpreadsheetDataState>()(
   persist(
     (set) => ({
+      headers: [],
       data: [],
-      setData: (rows) => set({ data: rows }),
+      setData: (headers, rows) => set({ headers, data: rows }),
       addRow: (row) => set((state) => ({ data: [...state.data, row] })),
       updateRow: (index, updatedRow) =>
         set((state) => {
@@ -31,6 +34,7 @@ export const useSpreadsheetDataStore = create<SpreadsheetDataState>()(
           newData.splice(index, 1);
           return { data: newData };
         }),
+      clearData: () => set({ headers: [], data: [] }),
     }),
     {
       name: "spreadsheet-data-storage",

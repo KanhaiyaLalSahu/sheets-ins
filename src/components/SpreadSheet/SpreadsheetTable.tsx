@@ -54,7 +54,7 @@ export const SpreadsheetTable: React.FC = () => {
           });
           return obj;
         });
-      setData(mapped);
+      setData(apiData.headers,mapped);
     }
   }, [apiData, setData]);
 
