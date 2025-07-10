@@ -7,12 +7,16 @@ import Papa from "papaparse";
 import { useSpreadsheetDataStore } from "../../store/useSpreadsheetDataStore";
 import { useColumnVisibilityStore } from "../../store/columnVisibilityStore";
 import { useIngestCsv } from "../../hooks/uploadCSV";
+import { useNewActionModal } from "../../store/useNewActionModal";
+import { NewActionModal } from "../ActionModal/NewActionModal"; 
+// import { useNavigate } from "react-router-dom";
 
 export function ActionToolbar() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { data } = useSpreadsheetDataStore();
   const uploadCsvMutation = useIngestCsv();
   const { hiddenColumns } = useColumnVisibilityStore();
+// const navigate = useNavigate();
 
   const [uploading, setUploading] = useState(false);
 
@@ -77,7 +81,8 @@ export function ActionToolbar() {
   };
 
   return (
-    <div className="flex items-center space-x-2">
+    <>
+       <div className="flex items-center space-x-2">
       {/* Import */}
       <div className="relative">
         <button
@@ -137,15 +142,23 @@ export function ActionToolbar() {
       </button>
 
       {/* New Action */}
-      <button className="flex items-center space-x-1 px-3 py-1.5 text-sm bg-[#4B6A4F] text-white rounded hover:bg-green-700">
-        <img src={Split} alt="" />
-        <span>New Action</span>
-      </button>
-
+      <button
+  onClick={() => {
+  useNewActionModal.getState().open();
+  // navigate("/modal"); // Navigate to /modal to trigger routing
+}}
+  className="flex items-center space-x-1 px-3 py-1.5 text-sm bg-[#4B6A4F] text-white rounded hover:bg-green-700"
+>
+  <img src={Split} alt="" />
+  <span>New Action</span>
+</button>
       {/* Display ingestion info */}
-      
     </div>
+      <NewActionModal />
+    </>
+     
   );
 }
 
 export default ActionToolbar;
+

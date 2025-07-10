@@ -24,3 +24,19 @@
 .my-scrollbar:hover::-webkit-scrollbar-thumb {
   background: #ccc;
 }
+
+.hide-scrollbar {
+  /* For IE, Edge */
+  -ms-overflow-style: none;
+  /* For Firefox */
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@theme {
+  --color-sheet-green: #4B6A4F; /* Custom primary color */
+  --color-secondary: #00a9eb; /* Custom secondary color */
+  --color-danger: #f06473; /* Custom danger color */
+}
