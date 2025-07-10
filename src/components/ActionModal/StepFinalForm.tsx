@@ -5,7 +5,10 @@ import { useSpreadsheetDataStore } from "../../store/useSpreadsheetDataStore";
 import { useIngestionStore } from "../../store/new/useIngestionStore";
 import { useSelectedSheetStore } from "../../store/useSelectedSheetStore";
 import Modal from "./Modal";
-
+import { useAddColumn } from "../../hooks/useAddColumn";
+import { useFetchSheets } from "../../hooks/useFetchSheets";
+import toast from "react-hot-toast";
+import type { AddColumnParams } from "../../hooks/useAddColumn";
 export function StepFinalForm() {
   const {
     close,
@@ -32,38 +35,59 @@ export function StepFinalForm() {
   const ingestionId = useIngestionStore((s) => s.ingestionId);
   const sourceSheetNumber = useSelectedSheetStore((s) => s.selectedSheet);
   const { headers, data } = useSpreadsheetDataStore();
+  const { mutate: addColumn } = useAddColumn();
+  const { refetch: refetchSheets } = useFetchSheets(ingestionId);
 
   const [showColumnPicker, setShowColumnPicker] = useState(false);
 
   const handleSubmit = () => {
-    const rowsAsArrays = data.map((row) =>
-      headers.map((header) => String(row[header] ?? ""))
-    );
+   if (!ingestionId) {
+    toast.error("Ingestion ID is missing");
+    return;
+  }
 
-    const payload = {
-      ingestionId,
-      prompt,
-      selectedColumns,
-      tableData: {
-        headers,
-        rows: rowsAsArrays,
-      },
-      newSheet,
-      sourceSheetNumber,
-      columnName,
-      description,
-      outputFormat,
-      columnsToMigrate,
-      actionName,
-      actionId,
-    };
+  if (!prompt || !columnName || !outputFormat) {
+    toast.error("Please fill all required fields.");
+    return;
+  }
 
-    console.log("Submitting:", payload);
+  const rowsAsArrays = data.map((row) =>
+    headers.map((header) => String(row[header] ?? ""))
+  );
 
-    // TODO: send payload to your API here
+  const payload: AddColumnParams = {
+    ingestionId,
+    prompt,
+    selectedColumns,
+    tableData: {
+      headers,
+      rows: rowsAsArrays,
+    },
+    newSheet,
+    sourceSheetNumber,
+    columnName,
+    description,
+    outputFormat,
+    columnsToMigrate,
+    actionName,
+    actionId,
+  };
 
-    close();
-    reset(); // ✅ clear the form after closing
+  console.log("Submitting:", payload);
+
+  addColumn(payload, {
+    onSuccess: (response) => {
+      toast.success(
+        `Column generation started in sheet #${response.targetSheet}`
+      );
+      refetchSheets();
+      close();
+      reset(); // Reset AFTER successful close
+    },
+    onError: (error) => {
+      toast.error(`Failed: ${error.message}`);
+    },
+  });
   };
 
   return (

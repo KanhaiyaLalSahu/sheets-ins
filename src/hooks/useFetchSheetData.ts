@@ -16,6 +16,7 @@ export const useFetchSheetData = (ingestionId: string | null, sheetNumber: numbe
         "GET",
         `/api/sheets/${ingestionId}/${sheetNumber}`
       );
+      console.log("Fetched sheet data:", res.data);
       return res.data;
     },
   });

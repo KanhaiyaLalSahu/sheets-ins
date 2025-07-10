@@ -19,6 +19,7 @@ export const useFetchSheets = (ingestionId: string | null) => {
         "GET",
         `/api/sheets/${ingestionId}`
       );
+      console.log("Fetched sheets:", res.data.response);
       return res.data.response;
     },
   });
